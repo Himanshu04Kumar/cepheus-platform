@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  /* Non-Negotiable Color Palette Overrides */
+  --color-bg-primary: #f5f2ed;
+  --color-bg-secondary: #ece8e1;
+  --color-bg-dark: #0d0d0d;
+  
+  --color-ink-primary: #0d0d0d;
+  --color-ink-mid: #3a3a3a;
+  --color-ink-light: #888888;
+  
+  --color-accent: #c8440a;
+  --color-accent-light: #f0e8e2;
+
+  /* Typography Infrastructure */
+  --font-serif: "DM Serif Display", serif;
+  --font-sans: "DM Sans", sans-serif;
+
+  /* Structural Constraints */
+  --border-radius-subtle: 5px;
+}
+
+/* 🚀 FIX: Removed the dot and decimal. Named it 'border-half' so it compiles seamlessly. */
+@utility border-half {
+  border-width: 0.5px;
+}
+
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght=300;500&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  body {
+    background-color: #f5f2ed;
+    color: #0d0d0d;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .display-serif {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+  }
+}
+
+.fade-up-element {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-up-element.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
