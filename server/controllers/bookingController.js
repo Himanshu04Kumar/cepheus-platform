@@ -4,18 +4,32 @@ import { appendTransactionToSheet } from '../utils/sheets.js';
 import { sendBookingConfirmationEmail } from '../utils/email.js';
 
 /**
- * Orchestrates user ingestion, Razorpay generation, and third-party accounting logs
+ * Orchestrates user ingestion, dynamic Razorpay generation with metadata notes, and third-party accounting logs
  * ROUTE: POST /api/bookings/initialize
  */
 export const initializeBookingWorkflow = async (req, res) => {
   try {
-    const { email, name, phone, serviceId, amount } = req.body;
+    // 1. Extract complete diagnostic and profile data from the inbound request body
+    const { 
+      email, 
+      name, 
+      phone, 
+      amount,
+      deviceBrand, 
+      deviceModel, 
+      issueDescription, 
+      repairType, 
+      pickupAddress, 
+      pickupZone, 
+      pickupDate, 
+      pickupSlot 
+    } = req.body;
 
-    // 1. Core input parameter validation guard
-    if (!email || !name || !amount) {
+    // Core input parameter validation guard
+    if (!email || !name || !amount || !deviceBrand || !deviceModel) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Missing vital request parameters: email, name, and amount are mandatory.' 
+        error: 'Missing vital request parameters: email, name, amount, deviceBrand, and deviceModel are mandatory.' 
       });
     }
 
@@ -34,7 +48,7 @@ export const initializeBookingWorkflow = async (req, res) => {
     if (!user) {
       const { data: newUser, error: insertError } = await supabase
         .from('users')
-        .insert([{ email, full_name: name, phone }]) // Changed 'name' to 'full_name' to match schema.sql
+        .insert([{ email, full_name: name, phone }])
         .select('id')
         .single();
 
@@ -45,9 +59,23 @@ export const initializeBookingWorkflow = async (req, res) => {
       console.log(`👤 [Supabase Engine] Existing user record resolved smoothly for ID: ${user.id}`);
     }
     
-    // 3. Invoke the Razorpay sandbox pipeline (convert incoming standard INR currency straight to Paise values)
+    // 3. Package dynamic data into a metadata packet for Razorpay's internal notes tracking
     const orderReceiptHash = `rcpt_cepheus_${Date.now()}`;
-    const razorpayOrder = await createRazorpayOrder(amount, orderReceiptHash);
+    const metadataNotes = {
+      customerId: user.id, // Dynamically links the provisioned Postgres UUID!
+      deviceBrand: deviceBrand,
+      deviceModel: deviceModel,
+      issueDescription: issueDescription || "Standard Diagnostic",
+      repairType: repairType || "General Assessment",
+      pickupAddress: pickupAddress || "Provided on call",
+      pickupZone: pickupZone || "Delhi Central",
+      pickupDate: pickupDate || new Date().toISOString().split('T')[0],
+      pickupSlot: pickupSlot || "Flexible Hours"
+    };
+
+    // Invoke the Razorpay sandbox pipeline passing both amount/receipt and our metadata payload
+    // Note: We update our utility function call to consume this third parameter cleanly
+    const razorpayOrder = await createRazorpayOrder(amount, orderReceiptHash, metadataNotes);
 
     // 4. Map operational variables straight to your automated Google Sheet layout matrix
     const standardIndianTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
@@ -67,7 +95,7 @@ export const initializeBookingWorkflow = async (req, res) => {
     // 6. Return unified payload data variables back to the client interface
     return res.status(200).json({
       success: true,
-      message: 'Booking sequence initialized across database, payment gateway, and tracking ledgers.',
+      message: 'Booking sequence initialized across database, payment gateway, and tracking ledgers with attached metadata.',
       userId: user.id,
       orderId: razorpayOrder.id,
       amountInPaise: razorpayOrder.amount,

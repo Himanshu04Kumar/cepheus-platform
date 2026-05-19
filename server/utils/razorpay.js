@@ -11,12 +11,13 @@ const razorpay = new Razorpay({
 });
 
 /**
- * Creates a standard transaction order with Razorpay
+ * Creates a standard transaction order with Razorpay including custom metadata notes
  * @param {number} amount - Raw currency amount (in Rupees)
  * @param {string} receiptId - Clean alphanumeric mapping ID link
+ * @param {Object} notes - Optional custom metadata payload object for tracking
  * @returns {Promise<Object>} The raw order payload block returned from Razorpay
  */
-export const createRazorpayOrder = async (amount, receiptId) => {
+export const createRazorpayOrder = async (amount, receiptId, notes = {}) => {
   try {
     // Razorpay captures currency strictly in the smallest currency sub-unit (Paise for INR).
     // To process a ₹199 transaction, we must calculate: 199 * 100 = 19900 Paise.
@@ -24,6 +25,7 @@ export const createRazorpayOrder = async (amount, receiptId) => {
       amount: Math.round(amount * 100), 
       currency: 'INR',
       receipt: receiptId,
+      notes: notes // 🚀 This passes our rich metadata payload directly into Razorpay's cloud ledger
     };
 
     const order = await razorpay.orders.create(options);
