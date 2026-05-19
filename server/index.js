@@ -3,6 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
+import bookingRoutes from './routes/bookings.js';
+
+import webhookRoutes from './routes/webhooks.js';
+
 // Import our new payments router module
 import paymentRouter from './routes/payments.js';
 
@@ -20,7 +24,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Mount our functional payment endpoints onto our server routing tree
-app.use('/api/payments', paymentRouter);
+app.use('/api/bookings', bookingRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'alive', message: 'Cepheus Engine is running smoothly.' });
@@ -45,3 +49,5 @@ app.listen(PORT, () => {
   console.log(`   - Razorpay Order Test: http://localhost:${PORT}/api/payments/test-booking-fee (POST)`);
   console.log(`==================================================\n`);
 });
+
+app.use('/api/webhooks', webhookRoutes);

@@ -1,0 +1,85 @@
+import { supabase } from '../config/supabase.js'; // Ensure your Supabase client configuration path is correct
+import { createRazorpayOrder } from '../utils/razorpay.js';
+import { appendTransactionToSheet } from '../utils/sheets.js';
+import { sendBookingConfirmationEmail } from '../utils/email.js';
+
+/**
+ * Orchestrates user ingestion, Razorpay generation, and third-party accounting logs
+ * ROUTE: POST /api/bookings/initialize
+ */
+export const initializeBookingWorkflow = async (req, res) => {
+  try {
+    const { email, name, phone, serviceId, amount } = req.body;
+
+    // 1. Core input parameter validation guard
+    if (!email || !name || !amount) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Missing vital request parameters: email, name, and amount are mandatory.' 
+      });
+    }
+
+    // 2. Query Supabase to find an existing user profile or register a new one
+    let { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (userError && userError.code !== 'PGRST116') { // PGRST116 indicates 0 rows found safely
+      throw new Error(`Supabase User Query Exception: ${userError.message}`);
+    }
+
+    // If the user profile doesn't exist, execute an atomic insert sequence
+    if (!user) {
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{ email, full_name: name, phone }]) // Changed 'name' to 'full_name' to match schema.sql
+        .select('id')
+        .single();
+
+      if (insertError) throw new Error(`Supabase User Provisioning Failure: ${insertError.message}`);
+      user = newUser;
+      console.log(`👤 [Supabase Engine] Successfully provisioned a new user profile link ID: ${user.id}`);
+    } else {
+      console.log(`👤 [Supabase Engine] Existing user record resolved smoothly for ID: ${user.id}`);
+    }
+    
+    // 3. Invoke the Razorpay sandbox pipeline (convert incoming standard INR currency straight to Paise values)
+    const orderReceiptHash = `rcpt_cepheus_${Date.now()}`;
+    const razorpayOrder = await createRazorpayOrder(amount, orderReceiptHash);
+
+    // 4. Map operational variables straight to your automated Google Sheet layout matrix
+    const standardIndianTimestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const databaseSheetRow = [
+      standardIndianTimestamp,
+      razorpayOrder.id,
+      razorpayOrder.receipt,
+      amount,
+      razorpayOrder.currency,
+      'pending_payment_verification' // Set status explicitly until webhook checks clear it
+    ];
+    await appendTransactionToSheet(databaseSheetRow);
+
+    // 5. Fire automated custom HTML receipt notification email via Resend
+    await sendBookingConfirmationEmail(email, razorpayOrder.id, amount);
+
+    // 6. Return unified payload data variables back to the client interface
+    return res.status(200).json({
+      success: true,
+      message: 'Booking sequence initialized across database, payment gateway, and tracking ledgers.',
+      userId: user.id,
+      orderId: razorpayOrder.id,
+      amountInPaise: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      receipt: razorpayOrder.receipt
+    });
+
+  } catch (error) {
+    console.error('❌ [Booking Controller Exception] Global runtime break:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Fatal operational breakpoint inside the booking workflow execution engine.' 
+    });
+  }
+};
