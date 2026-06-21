@@ -1,39 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import BookRepair from './pages/BookRepair';
 import TrackRepair from './pages/TrackRepair';
 import InstitutionalPartner from './pages/InstitutionalPartner';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
-  // Simple, robust client-side routing matrix state
-  const [currentPage, setCurrentPage] = useState('home');
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <Home navigate={setCurrentPage} />;
-      case 'book':
-        return <BookRepair navigate={setCurrentPage} />;
-      case 'track':
-        return <TrackRepair navigate={setCurrentPage} />;
-      case 'institutions':
-        return <InstitutionalPartner navigate={setCurrentPage} />;
-      default:
-        return <Home navigate={setCurrentPage} />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-bg-primary text-ink-primary selection:bg-accent selection:text-white">
-      {/* Global Fixed Navigation Header */}
-      <Navbar currentPage={currentPage} navigate={setCurrentPage} />
-      
-      {/* Active Page View Layer */}
-      <main className="pt-20">
-        {renderPage()}
-      </main>
-    </div>
+    <Router>
+      <div className="min-h-screen bg-bg-primary text-ink-primary selection:bg-accent selection:text-white">
+        {/* Global Fixed Navigation Header wrapped in Router context */}
+        <Navbar />
+        
+        {/* Active Page View Layer */}
+        <main className="pt-20">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/book" element={<BookRepair />} />
+            <Route path="/track" element={<TrackRepair />} />
+            <Route path="/institutional-partner" element={<InstitutionalPartner />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            {/* Catch-all fallback routing back to Homepage */}
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 

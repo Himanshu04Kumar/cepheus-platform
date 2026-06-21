@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Smartphone, ShieldCheck, Eye, Layers, Clock } from 'lucide-react';
 
-export default function Home({ navigate }) {
+export default function Home() {
+  const navigate = useNavigate();
   const steps = [
     { num: 'I', title: 'Book Online', desc: 'Provide device metrics, log the specific performance issue, and pick a preferred diagnostic window.' },
     { num: 'II', title: 'Doorstep Pickup', desc: 'Our technician collects your machine right from your location, creating an onboarding visual report on arrival.' },
@@ -40,13 +42,13 @@ export default function Home({ navigate }) {
           </p>
           <div className="pt-4 flex flex-wrap gap-4 text-xs uppercase tracking-[0.14em] font-sans font-medium">
             <button 
-              onClick={() => navigate('book')}
+              onClick={() => navigate('/book')}
               className="bg-accent text-white px-6 py-4 rounded-subtle hover:bg-ink-primary transition-colors duration-200 cursor-pointer"
             >
               Book a Repair
             </button>
             <button 
-              onClick={() => navigate('institutions')}
+              onClick={() => navigate('/institutional-partner')}
               className="border border-half border-ink-primary text-ink-primary px-6 py-4 rounded-subtle hover:bg-ink-primary hover:text-white transition-colors duration-200 cursor-pointer"
             >
               For Institutions
@@ -233,8 +235,9 @@ export default function Home({ navigate }) {
         <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 font-sans text-[11px] text-ink-light uppercase tracking-wider font-medium">
           <div className="font-serif text-sm tracking-tight text-ink-primary normal-case font-normal">Cepheus</div>
           <div className="flex space-x-6">
-            <button onClick={() => navigate('home')} className="hover:text-accent cursor-pointer">Terms</button>
-            <button onClick={() => navigate('track')} className="hover:text-accent cursor-pointer">Track Link</button>
+            <button onClick={() => navigate('/')} className="hover:text-accent cursor-pointer bg-transparent border-none p-0 text-[11px] uppercase tracking-wider font-medium text-ink-light">Terms</button>
+            <button onClick={() => navigate('/track')} className="hover:text-accent cursor-pointer bg-transparent border-none p-0 text-[11px] uppercase tracking-wider font-medium text-ink-light">Track Link</button>
+            <button onClick={() => navigate('/admin')} className="hover:text-accent cursor-pointer bg-transparent border-none p-0 text-[11px] uppercase tracking-wider font-medium text-ink-light">Admin Panel</button>
             <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-accent">Instagram</a>
           </div>
           <div>© Cepheus · {new Date().getFullYear()}</div>

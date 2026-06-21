@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Laptop, Check, ArrowRight, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 
+<<<<<<< HEAD
 // --- UPDATED FOR PRODUCTION ---
 // This will use your Render URL if it's set in Vercel, otherwise it falls back to localhost for your own testing.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function BookRepair({ navigate }) {
+=======
+export default function BookRepair() {
+  const navigate = useNavigate();
+>>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -307,8 +313,39 @@ export default function BookRepair({ navigate }) {
             <div className="p-4 flex justify-between"><span className="text-ink-light">Machine</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
             <div className="p-4 flex justify-between"><span className="text-ink-light">Schedule</span><span className="font-medium">{formData.pickupDate} [{formData.pickupSlot}]</span></div>
           </div>
+<<<<<<< HEAD
           <div className="bg-accent/5 border border-accent/20 p-4 rounded-subtle">
             <p className="text-[11px] text-ink-mid">A <strong>₹199 booking fee</strong> is required to secure your slot, adjustable against the final bill.</p>
+=======
+        )}
+
+        {/* STEP 5: ATOMIC GATEWAY TRANSACTION COMPLETE */}
+        {step === 5 && (
+          <div className="space-y-6 text-center py-6">
+            <div className="w-12 h-12 bg-accent/10 border border-half border-accent text-accent rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Check size={24} strokeWidth={1.5} />
+            </div>
+            <div className="space-y-2">
+              <h2 className="font-serif text-3xl tracking-tight text-ink-primary">You're booked.</h2>
+              <p className="text-xs text-ink-light font-light max-w-[420px] mx-auto">
+                Your transaction ledger allocation has cleared successfully. The hardware intake routing sequence is officially initialized.
+              </p>
+            </div>
+
+            <div className="bg-bg-primary border border-half border-black/10 p-6 rounded-subtle max-w-[320px] mx-auto">
+              <span className="text-[9px] uppercase tracking-widest text-ink-light block mb-1">Tracking Ledger Hash ID</span>
+              <span className="font-serif text-2xl text-accent tracking-wide block font-mono">{bookingId}</span>
+            </div>
+
+            <div className="pt-4 flex justify-center gap-3 text-xs uppercase tracking-wider font-sans font-medium">
+              <button 
+                onClick={() => navigate('/track')}
+                className="bg-accent text-white px-5 py-3 rounded-subtle hover:bg-ink-primary transition-colors cursor-pointer"
+              >
+                Track My Repair
+              </button>
+            </div>
+>>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
           </div>
         </div>
       )}

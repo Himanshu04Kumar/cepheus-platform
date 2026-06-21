@@ -41,3 +41,40 @@ export const appendTransactionToSheet = async (rowData) => {
     // Silent fail mitigation so payment processing isn't blocked by reporting hiccups
   }
 };
+
+/**
+ * Appends silent field blur lead telemetry data to our tracking spreadsheet
+ * @param {Array} rowData - Array of values matching [Timestamp, Brand, Model, IssueDescription, PickupZone, Email, Phone, Name]
+ */
+export const appendTelemetryToSheet = async (rowData) => {
+  try {
+    // Attempt to append to a 'Telemetry' tab.
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: 'Telemetry!A:H',
+      valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: {
+        values: [rowData],
+      },
+    });
+    console.log('📡 [Sheets Engine] Telemetry row successfully logged to Telemetry tab.');
+  } catch (error) {
+    // Fallback: If 'Telemetry' tab does not exist, log to 'Sheet1' with custom columns
+    console.warn('⚠️ [Sheets Engine] Telemetry tab not found. Writing to Sheet1 fallback range Sheet1!H:O...');
+    try {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: 'Sheet1!H:O',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: {
+          values: [rowData],
+        },
+      });
+      console.log('📡 [Sheets Engine] Telemetry successfully logged to Sheet1 fallback range.');
+    } catch (fallbackError) {
+      console.error('❌ [Sheets Engine] Telemetry write failed entirely:', fallbackError);
+    }
+  }
+};
