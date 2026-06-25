@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Laptop, Check, ArrowRight, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 
-<<<<<<< HEAD
-// --- UPDATED FOR PRODUCTION ---
-// This will use your Render URL if it's set in Vercel, otherwise it falls back to localhost for your own testing.
+// Extract base routing URL from your environment configuration, default to local port 5000 if blank
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-export default function BookRepair({ navigate }) {
-=======
 export default function BookRepair() {
   const navigate = useNavigate();
->>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -53,7 +48,6 @@ export default function BookRepair() {
   const handleModelBlur = async () => {
     if (!formData.model || !formData.brand) return;
     try {
-      // UPDATED: Used API_BASE_URL
       await axios.post(`${API_BASE_URL}/api/sheets/log-blur`, {
         brand: formData.brand,
         model: formData.model,
@@ -109,14 +103,12 @@ export default function BookRepair() {
       }
       const pinClean = formData.pinCode.replace(/\D/g, '');
       if (pinClean.length !== 6 || !pinClean.startsWith('11')) {
-        setErrorMsg('Please provide a valid 6-digit Delhi PIN code (e.g., 110001).');
+        setErrorMsg('Please provide a valid 6-digit Delhi PIN code (e.g., 110001) starting with 11.');
         return false;
       }
       const selectedDate = new Date(formData.pickupDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const maxFutureDate = new Date();
-      maxFutureDate.setDate(today.getDate() + 30);
       if (selectedDate < today) {
         setErrorMsg('The preferred pickup date cannot sit in the past.');
         return false;
@@ -143,7 +135,6 @@ export default function BookRepair() {
     setLoading(true);
     const composedAddress = `${formData.addressLine1}${formData.addressLine2 ? ', ' + formData.addressLine2 : ''}${formData.landmark ? ' (Landmark: ' + formData.landmark + ')' : ''}, PIN: ${formData.pinCode}`;
     try {
-      // UPDATED: Used API_BASE_URL
       const initResponse = await axios.post(`${API_BASE_URL}/api/bookings/initialize`, {
         email: formData.email,
         name: formData.name,
@@ -172,7 +163,6 @@ export default function BookRepair() {
         handler: async function (response) {
           try {
             setLoading(true);
-            // UPDATED: Used API_BASE_URL
             const verifyRes = await axios.post(`${API_BASE_URL}/api/webhooks/razorpay`, {
               event: "payment.captured",
               payload: {
@@ -241,6 +231,7 @@ export default function BookRepair() {
 
       {errorMsg && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs rounded-subtle">{errorMsg}</div>}
 
+      {/* STEP 1: PARAMETERS CONFIG */}
       {step === 1 && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
@@ -268,11 +259,12 @@ export default function BookRepair() {
         </div>
       )}
 
+      {/* STEP 2: CLASSIFICATION SCHEMES */}
       {step === 2 && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-3">
             {repairTiers.map((tier) => (
-              <div key={tier.id} onClick={() => handleToggleRepair(tier.id)} className={`border rounded-subtle p-4 flex items-center justify-between cursor-pointer ${formData.selectedRepairs.includes(tier.id) ? 'border-accent bg-accent/[0.02]' : 'border-black/10'}`}>
+              <div key={tier.id} onClick={() => handleToggleRepair(tier.id)} className={`border rounded-subtle p-4 flex items-center justify-between cursor-pointer transition-all ${formData.selectedRepairs.includes(tier.id) ? 'border-accent bg-accent/[0.02]' : 'border-black/10'}`}>
                 <div className="space-y-1">
                   <h4 className="text-xs font-medium text-ink-primary">{tier.label}</h4>
                   <p className="text-[10px] text-ink-light font-mono">{tier.price}</p>
@@ -284,6 +276,7 @@ export default function BookRepair() {
         </div>
       )}
 
+      {/* STEP 3: LOGISTICS ENGINES */}
       {step === 3 && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -291,6 +284,8 @@ export default function BookRepair() {
             <input type="tel" placeholder="Phone" className="border border-black/10 rounded-subtle px-4 py-3 text-xs" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
             <input type="email" placeholder="Email Address" className="border border-black/10 rounded-subtle px-4 py-3 text-xs sm:col-span-2" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
             <input type="text" placeholder="Address Line 1" className="border border-black/10 rounded-subtle px-4 py-3 text-xs sm:col-span-2" value={formData.addressLine1} onChange={(e) => setFormData({...formData, addressLine1: e.target.value})} />
+            <input type="text" placeholder="Address Line 2 (Optional)" className="border border-black/10 rounded-subtle px-4 py-3 text-xs sm:col-span-2" value={formData.addressLine2} onChange={(e) => setFormData({...formData, addressLine2: e.target.value})} />
+            <input type="text" placeholder="Landmark (Optional)" className="border border-black/10 rounded-subtle px-4 py-3 text-xs sm:col-span-2" value={formData.landmark} onChange={(e) => setFormData({...formData, landmark: e.target.value})} />
             <input type="text" placeholder="PIN Code" className="border border-black/10 rounded-subtle px-4 py-3 text-xs" value={formData.pinCode} onChange={(e) => setFormData({...formData, pinCode: e.target.value})} />
             <select className="border border-black/10 rounded-subtle px-4 py-3 text-xs" value={formData.pickupZone} onChange={(e) => setFormData({...formData, pickupZone: e.target.value})}>
               {zones.map((z, idx) => <option key={idx}>{z}</option>)}
@@ -298,7 +293,7 @@ export default function BookRepair() {
             <input type="date" className="border border-black/10 rounded-subtle px-4 py-3 text-xs" value={formData.pickupDate} onChange={(e) => setFormData({...formData, pickupDate: e.target.value})} />
             <div className="grid grid-cols-3 gap-2 sm:col-span-2">
               {timeSlots.map((slot, idx) => (
-                <button key={idx} type="button" onClick={() => setFormData({...formData, pickupSlot: slot})} className={`border p-2 rounded-subtle text-[10px] ${formData.pickupSlot === slot ? 'border-accent bg-accent/5' : 'border-black/10'}`}>
+                <button key={idx} type="button" onClick={() => setFormData({...formData, pickupSlot: slot})} className={`border p-2 rounded-subtle text-[10px] transition-colors ${formData.pickupSlot === slot ? 'border-accent bg-accent/5' : 'border-black/10'}`}>
                   {slot.split(' ')[0]}
                 </button>
               ))}
@@ -307,69 +302,64 @@ export default function BookRepair() {
         </div>
       )}
 
+      {/* STEP 4: LEDGER PREVIEW */}
       {step === 4 && (
         <div className="space-y-6">
           <div className="border border-black/10 bg-bg-primary rounded-subtle divide-y divide-black/5 text-xs">
             <div className="p-4 flex justify-between"><span className="text-ink-light">Machine</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
             <div className="p-4 flex justify-between"><span className="text-ink-light">Schedule</span><span className="font-medium">{formData.pickupDate} [{formData.pickupSlot}]</span></div>
-          </div>
-<<<<<<< HEAD
-          <div className="bg-accent/5 border border-accent/20 p-4 rounded-subtle">
-            <p className="text-[11px] text-ink-mid">A <strong>₹199 booking fee</strong> is required to secure your slot, adjustable against the final bill.</p>
-=======
-        )}
-
-        {/* STEP 5: ATOMIC GATEWAY TRANSACTION COMPLETE */}
-        {step === 5 && (
-          <div className="space-y-6 text-center py-6">
-            <div className="w-12 h-12 bg-accent/10 border border-half border-accent text-accent rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <Check size={24} strokeWidth={1.5} />
-            </div>
-            <div className="space-y-2">
-              <h2 className="font-serif text-3xl tracking-tight text-ink-primary">You're booked.</h2>
-              <p className="text-xs text-ink-light font-light max-w-[420px] mx-auto">
-                Your transaction ledger allocation has cleared successfully. The hardware intake routing sequence is officially initialized.
-              </p>
-            </div>
-
-            <div className="bg-bg-primary border border-half border-black/10 p-6 rounded-subtle max-w-[320px] mx-auto">
-              <span className="text-[9px] uppercase tracking-widest text-ink-light block mb-1">Tracking Ledger Hash ID</span>
-              <span className="font-serif text-2xl text-accent tracking-wide block font-mono">{bookingId}</span>
-            </div>
-
-            <div className="pt-4 flex justify-center gap-3 text-xs uppercase tracking-wider font-sans font-medium">
-              <button 
-                onClick={() => navigate('/track')}
-                className="bg-accent text-white px-5 py-3 rounded-subtle hover:bg-ink-primary transition-colors cursor-pointer"
-              >
-                Track My Repair
-              </button>
-            </div>
->>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
+            <div className="p-4 flex justify-between"><span className="text-ink-light">Zone Selection</span><span className="font-medium">{formData.pickupZone}</span></div>
+            <div className="p-4 flex justify-between text-accent font-bold"><span className="text-ink-light">Booking Fee Deposit</span><span>₹199.00</span></div>
           </div>
         </div>
       )}
 
+      {/* STEP 5: GATEWAY TRANSACTION COMPLETE */}
       {step === 5 && (
-        <div className="space-y-6 text-center py-6">
-          <div className="w-12 h-12 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-4"><Check size={24} /></div>
-          <h2 className="font-serif text-3xl">You're booked.</h2>
-          <div className="bg-bg-primary border border-black/10 p-6 rounded-subtle max-w-[320px] mx-auto">
-            <span className="text-[9px] uppercase tracking-widest text-ink-light block mb-1">Ledger Hash</span>
-            <span className="font-serif text-2xl text-accent font-mono">{bookingId}</span>
+        <div className="space-y-6 text-center py-6 animate-pulse">
+          <div className="w-12 h-12 bg-accent/10 border border-accent text-accent rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check size={24} strokeWidth={1.5} />
           </div>
-          <button onClick={() => navigate('track')} className="bg-accent text-white px-5 py-3 rounded-subtle text-xs uppercase tracking-widest">Track My Repair</button>
+          <div className="space-y-2">
+            <h2 className="font-serif text-3xl tracking-tight text-ink-primary">You're booked.</h2>
+            <p className="text-xs text-ink-light font-light max-w-[420px] mx-auto">
+              Your transaction ledger allocation has cleared successfully. The hardware intake routing sequence is officially initialized.
+            </p>
+          </div>
+
+          <div className="bg-bg-primary border border-black/10 p-6 rounded-subtle max-w-[320px] mx-auto">
+            <span className="text-[9px] uppercase tracking-widest text-ink-light block mb-1">Tracking Ledger Hash ID</span>
+            <span className="font-serif text-2xl text-accent tracking-wide block font-mono">{bookingId}</span>
+          </div>
+
+          <div className="pt-4 flex justify-center gap-3 text-xs uppercase tracking-wider font-sans font-medium">
+            <button 
+              onClick={() => navigate('/track')}
+              className="bg-accent text-white px-5 py-3 rounded-subtle hover:bg-ink-primary transition-colors cursor-pointer"
+            >
+              Track My Repair
+            </button>
+          </div>
         </div>
       )}
 
+      {/* BOTTOM CONTROL NAVIGATION LAYER */}
       {step < 5 && (
         <div className="mt-8 flex justify-between text-xs uppercase tracking-widest font-medium">
-          {step > 1 ? <button onClick={prevStep} className="flex items-center gap-2"><ArrowLeft size={14} /> Back</button> : <div />}
+          {step > 1 ? (
+            <button onClick={prevStep} className="flex items-center gap-2"><ArrowLeft size={14} /> Back</button>
+          ) : (
+            <div />
+          )}
           {step < 4 ? (
             <button onClick={nextStep} className="flex items-center gap-2 text-accent">Continue <ArrowRight size={14} /></button>
           ) : (
             <button onClick={executePaymentGatewayLoop} disabled={loading} className="bg-accent text-white px-6 py-3 rounded-subtle disabled:opacity-50 flex items-center gap-2">
-              {loading ? <><Loader2 size={14} className="animate-spin" /> Processing...</> : <><CreditCard size={14} /> Pay ₹199</>}
+              {loading ? (
+                <><Loader2 size={14} className="animate-spin" /> Processing...</>
+              ) : (
+                <><CreditCard size={14} /> Pay ₹199</>
+              )}
             </button>
           )}
         </div>
