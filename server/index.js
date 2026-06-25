@@ -5,10 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 import bookingRoutes from './routes/bookings.js';
 import webhookRoutes from './routes/webhooks.js';
 import paymentRouter from './routes/payments.js';
-import trackingRoutes from './routes/tracking.js';
-import sheetsRoutes from './routes/sheets.js';
-import institutionsRoutes from './routes/institutions.js';
-import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -35,20 +31,26 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // 3. ROUTE MOUNTING
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/payments', paymentRouter); // Now mounted correctly
 =======
 // Mount our functional endpoints onto our server routing tree
+=======
+// 3. ROUTE MOUNTING
+>>>>>>> 912f931 (just did some experiment)
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/payments', paymentRouter);
-app.use('/api/tracking', trackingRoutes);
 app.use('/api/webhooks', webhookRoutes);
+<<<<<<< HEAD
 app.use('/api/sheets', sheetsRoutes);
 app.use('/api/institutions', institutionsRoutes);
 app.use('/api/admin', adminRoutes);
 >>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
+=======
+app.use('/api/payments', paymentRouter); // Now mounted correctly
+>>>>>>> 912f931 (just did some experiment)
 
 // 4. HEALTH CHECK ENDPOINTS
 app.get('/api/health', (req, res) => {
@@ -77,6 +79,9 @@ app.get('/api/test-db', async (req, res) => {
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 912f931 (just did some experiment)
 // 5. START SERVER
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`
@@ -84,6 +89,7 @@ app.listen(PORT, '0.0.0.0', () => {
     📡 Port: ${PORT}
     🔗 URL: http://localhost:${PORT}
     `);
+<<<<<<< HEAD
 });
 =======
 app.listen(PORT, () => {
@@ -96,3 +102,6 @@ app.listen(PORT, () => {
   console.log(`==================================================\n`);
 });
 >>>>>>> 698ee07 (Refactor client to React Router declarative paths and integrate full-stack tracking and telemetry engines)
+=======
+});
+>>>>>>> 912f931 (just did some experiment)
